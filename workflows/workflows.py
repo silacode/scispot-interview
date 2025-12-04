@@ -44,7 +44,7 @@ class ElisaAnalysisWorkflow:
             wait_for_latest_run,
             req.experiment_id,
             schedule_to_close_timeout=timedelta(hours=1),
-            retry_policy=...,
+            retry_policy=retry_policy,
         )
 
         # 2) fetch + process + QC
@@ -52,7 +52,7 @@ class ElisaAnalysisWorkflow:
             process_elisa_plate,
             s3_key,
             schedule_to_close_timeout=timedelta(minutes=5),
-            retry_policy=...,
+            retry_policy=retry_policy,
         )
 
         # 3) write processed result + index in ES
@@ -60,7 +60,7 @@ class ElisaAnalysisWorkflow:
             persist_analysis,
             processed,
             schedule_to_close_timeout=timedelta(minutes=2),
-            retry_policy=...,
+            retry_policy=retry_policy,
         )
 
         # 4) run LLM agentic report
@@ -68,8 +68,8 @@ class ElisaAnalysisWorkflow:
             run_agentic_report,
             result,
             schedule_to_close_timeout=timedelta(minutes=2),
-            retry_policy=...,
+            retry_policy=retry_policy,
         )
 
         # merge report into result and return
-        return AnalysisResult(**result.dict(), report=report)
+        return AnalysisResult(**result.model_dump(), report=report)

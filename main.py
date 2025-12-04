@@ -1,3 +1,4 @@
+from models.models import ElisaRunRequest
 from temporalio.client import Client, WorkflowExecutionDescription, WorkflowHandle
 from config import get_settings
 from contextlib import asynccontextmanager
@@ -30,6 +31,8 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+settings = get_settings()
+
 
 @app.get("/", tags=["Health"])
 def health_check() -> dict[str, str]:
@@ -37,12 +40,14 @@ def health_check() -> dict[str, str]:
 
 
 @app.post("/workflows/elisa/run", response_model=RunResponse)
-async def run_elisa(req, client: Client = Depends(get_temporal_client)):
+async def run_elisa(
+    req: ElisaRunRequest, client: Client = Depends(get_temporal_client)
+):
     handle = await client.start_workflow(
         ElisaAnalysisWorkflow.run,
         req,
         id=f"elisa-{req.experiment_id}",
-        task_queue="elisa-task-queue",
+        task_queue=settings.task_queue,
     )
     return RunResponse(workflow_id=handle.id, run_id=handle.run_id)
 
